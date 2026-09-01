@@ -1,0 +1,29 @@
+# Architecture
+
+## 최소 아키텍처 원칙
+
+1. 게임 규칙은 UI, Sprite, Animation, VFX, Input에 의존하지 않는다.
+2. ScriptableObject는 변하지 않는 정적 Definition 데이터에 사용한다.
+3. HP, AP, 현재 위치, Status 지속시간 같은 mutable runtime state는 ScriptableObject에 저장하지 않는다.
+4. Unit의 상태와 표현을 분리한다.
+5. Grid 논리와 Grid 표현을 분리한다.
+6. 기존 프로젝트의 거대한 `BattleController` 구조를 다시 만들지 않는다.
+7. `LegacyReference`는 읽기 전용으로 유지하고 기존 알고리즘과 규칙만 선별적으로 참고한다.
+8. 실제 출시가 목표이므로 필요 이상의 추상화와 계층을 만들지 않는다.
+
+## 상태와 표현의 경계
+
+`UnitState`가 담당할 런타임 상태:
+
+- HP
+- AP
+- GridPosition
+- Status
+
+`UnitView`가 담당할 표현:
+
+- Sprite
+- Animation
+- VFX
+
+실제 구현 클래스 구조는 Combat Prototype을 진행하며 필요한 범위에서 결정한다.
