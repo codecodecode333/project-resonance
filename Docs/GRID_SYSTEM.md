@@ -41,13 +41,23 @@ Diagonal은 지원하지 않는다. 중앙 Cell은 최대 4개, Edge는 최대 3
 
 ## Height Traversal Rule
 
-향후 이동 가능 여부는 다음 규칙을 사용한다.
+기본 이동 가능 여부는 다음 규칙을 사용한다.
 
 `abs(from.Height - to.Height) <= 1`
 
-Height 차이가 0 또는 1이면 이동 가능하고, 차이가 2이면 이동할 수 없다. 현재 MVP에서 평지 이동과 Height 1 차이 이동은 모두 거리 1이며 추가 Movement Cost는 없다.
+Height 차이가 0 또는 1이면 이동 가능하고, 차이가 2이면 이동할 수 없다. 현재 MVP에서 평지 이동과 Height 1 차이 이동은 모두 거리 1이며 추가 Movement Cost는 없다. `GridTraversal`이 인접한 두 Cell의 이 규칙을 판정하고, BFS는 향후 이 판정을 소비한다.
 
-이 규칙은 이번 Minimum Grid Domain에서 구현하지 않는다. Traversable Neighbor 판정은 BFS/Movement 단계의 책임이다.
+## Pass-through and Stop-at
+
+`GridTraversal` 판정은 중간 경로로 통과할 수 있는지와 최종 위치로 정지할 수 있는지를 분리한다.
+
+- 빈 Walkable Cell: 통과 가능, 정지 가능
+- 아군 Unit 점유 Cell: 통과 가능, 정지 불가
+- 적군 Unit 점유 Cell: 통과 불가, 정지 불가
+- `UnitRegistry`에서 해석할 수 없는 Entity 점유 Cell: 안전하게 Blocking으로 처리
+- Mover 자신이 목적지를 점유한 호출: 유효하지 않은 상태로 보고 통과를 거절
+
+`CanPassThrough` 판정은 Bounds, 4방향 인접, 목적지 Walkable, Height 차이, Occupancy와 Team을 조합한다. `CanStopAt`은 단일 Cell을 판정하므로 Height edge를 검사하지 않고 Bounds, Walkable, 빈 Occupancy만 확인한다.
 
 ## Tilemap Mapping
 
@@ -121,15 +131,15 @@ Runtime Obstacle과 Walkable Surface 자체를 바꾸는 Terrain Effect는 다�
 
 현재는 `BaseHeight`, `SurfaceModifier`, `EffectiveHeight`, Terrain Effect System을 구현하지 않으며 `CellState.Height`를 그대로 사용한다.
 
-## Future Traversal Composition
+## Traversal Composition
 
-향후 `CanTraverse(from, to)`는 다음 조건을 합성한다.
+`CanPassThrough(from, to)`는 다음 조건을 합성한다.
 
-1. 목적지가 Grid Bounds 내부인가
-2. 목적지 Terrain의 `CellState.IsWalkable`이 true인가
-3. 목적지가 Blocking Occupancy로 점유되지 않았는가
+1. Mover가 유효하고 from과 to가 Grid Bounds 내부인가
+2. from과 to가 4방향으로 인접했는가
+3. 목적지 Terrain의 `CellState.IsWalkable`이 true인가
 4. `abs(from.Height - to.Height) <= 1`인가
-5. Special Traversal Rule을 만족하는가
+5. 목적지가 비었거나 Mover가 아닌 아군 Unit으로 점유되었는가
 
 `GetOrthogonalNeighbors`는 계속 순수 공간 인접 조회만 담당한다.
 
@@ -149,6 +159,8 @@ Runtime Obstacle과 Walkable Surface 자체를 바꾸는 Terrain Effect는 다�
 - Runtime `ObstacleState`
 - Dynamic Terrain과 Surface Modifier
 - Height-aware BFS와 Movement
+- Ghost, Flying, Jump, Teleport 등을 조합할 `TraversalContext` 또는 `MovementCapability`
+- Wall, Door, Phaseable Wall 등 Cell 사이를 막는 Edge/Link 단위 규칙
 - LOS
 - Map Generation
 - Isometric Tilemap Presentation

@@ -6,13 +6,15 @@
 
 ## Current Milestone
 
-`Combat Prototype 002 — UnitState + Grid Occupancy` — **Complete**
+`Combat Prototype 003 — Height-aware Traversal Rules` — **Complete**
 
-- `EntityId`, `UnitState`, `GridOccupancy` 구현
-- Unit 최초 배치/제거 상태 일관성 구현
-- Unity EditMode Tests: 23/23 passed
+- `UnitRegistry`, `GridTraversal` 구현
+- Height, Walkable, 4방향, 아군/적군/Unknown Occupancy 통과 규칙 구현
+- Pass-through와 Stop-at 판정 분리
+- Unity EditMode Tests: 35/35 passed
 - Unity compile errors: 0
+- Commit state: local `main` HEAD, not pushed
 
 ## Next Milestone
 
-`Combat Prototype 003 — Height-aware Traversal Rules`
+`Combat Prototype 004 — BFS Reachable Cells`
