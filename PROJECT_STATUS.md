@@ -1,20 +1,21 @@
 # Project Status
 
-- Updated: 2026-09-02
+- Updated: 2026-09-03
 - Branch: `main`
+- Implementation base: `9ade52f` (already pushed)
 - Review base: `main` HEAD
 
 ## Current Milestone
 
-`Combat Prototype 003 — Height-aware Traversal Rules` — **Complete**
+`Combat Prototype 004 — BFS Reachable Cells` — **Complete**
 
-- `UnitRegistry`, `GridTraversal` 구현
-- Height, Walkable, 4방향, 아군/적군/Unknown Occupancy 통과 규칙 구현
-- Pass-through와 Stop-at 판정 분리
-- Unity EditMode Tests: 35/35 passed
+- `ReachabilityFinder`: GridTraversal을 소비하는 거리 제한 BFS 구현
+- Visited/목적지 분리, 아군 통과, 적군/Unknown 차단, 시작 Cell 제외
+- 조회 전후 Unit/Terrain/Occupancy/Registry 상태 보존 검증
+- Unity EditMode Tests: 48/48 passed (BFS: 13/13)
 - Unity compile errors: 0
-- Commit state: local `main` HEAD, not pushed
+- Git handoff: milestone 004 local commit at `main` HEAD; no push performed in this implementation task
 
 ## Next Milestone
 
-`Combat Prototype 004 — BFS Reachable Cells`
+`Combat Prototype 005 — Path Reconstruction`

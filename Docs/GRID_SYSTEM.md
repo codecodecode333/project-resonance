@@ -45,7 +45,7 @@ Diagonal은 지원하지 않는다. 중앙 Cell은 최대 4개, Edge는 최대 3
 
 `abs(from.Height - to.Height) <= 1`
 
-Height 차이가 0 또는 1이면 이동 가능하고, 차이가 2이면 이동할 수 없다. 현재 MVP에서 평지 이동과 Height 1 차이 이동은 모두 거리 1이며 추가 Movement Cost는 없다. `GridTraversal`이 인접한 두 Cell의 이 규칙을 판정하고, BFS는 향후 이 판정을 소비한다.
+Height 차이가 0 또는 1이면 이동 가능하고, 차이가 2이면 이동할 수 없다. 현재 MVP에서 평지 이동과 Height 1 차이 이동은 모두 거리 1이며 추가 Movement Cost는 없다. `GridTraversal`이 인접한 두 Cell의 이 규칙을 판정하고, `ReachabilityFinder`의 BFS가 이 판정을 소비한다.
 
 ## Pass-through and Stop-at
 
@@ -58,6 +58,16 @@ Height 차이가 0 또는 1이면 이동 가능하고, 차이가 2이면 이동�
 - Mover 자신이 목적지를 점유한 호출: 유효하지 않은 상태로 보고 통과를 거절
 
 `CanPassThrough` 판정은 Bounds, 4방향 인접, 목적지 Walkable, Height 차이, Occupancy와 Team을 조합한다. `CanStopAt`은 단일 Cell을 판정하므로 Height edge를 검사하지 않고 Bounds, Walkable, 빈 Occupancy만 확인한다.
+
+## Reachability BFS
+
+`ReachabilityFinder.FindReachableCells(mover, maxDistance)`는 배치된 Unit의 현재 위치에서 거리 안에 이동을 끝낼 수 있는 Cell들을 반환한다. 시작 Cell은 제외하고, 거리 0은 빈 결과다. null Mover, 음수 거리, 미배치 또는 해당 Grid 밖에 배치된 Mover는 명시적으로 예외를 발생시킨다. 결과 순서는 API 계약이 아니다.
+
+모든 Traversal Edge Cost는 평지·오르막·내리막 모두 1이다. BFS는 Queue와 최초 방문 거리 Dictionary를 사용하고, 탐색용 Visited와 최종 Reachable 결과를 분리한다.
+
+- 공간 후보는 `GetOrthogonalNeighbors`, 탐색 허용은 `CanPassThrough`, 목적지 포함 여부는 `CanStopAt`으로 결정한다. BFS가 Height/Walkable/Team/Occupancy 규칙을 직접 재구현하지 않는다.
+- 아군 Cell은 탐색 가능하지만 목적지가 아니며, 뒤쪽 빈 Cell은 거리 안이면 목적지가 될 수 있다. 적군/Unknown Occupancy는 해당 경로의 탐색을 차단한다.
+- 계산은 순수 조회이며 Unit 위치, Terrain, Occupancy, Registry를 변경하지 않는다. 실제 Movement나 predecessor 저장은 없으며 Path Reconstruction은 별도 마일스톤이다.
 
 ## Tilemap Mapping
 
@@ -149,7 +159,7 @@ Runtime Obstacle과 Walkable Surface 자체를 바꾸는 Terrain Effect는 다�
 
 - Tilemap, GridPresenter, World Position 변환, TerrainSide, Overlay
 - UnitView, ObstacleState, Dynamic Terrain
-- BFS, A*, Pathfinding, Path Reconstruction, Movement
+- Path Reconstruction, 실제 Movement, A*, Dijkstra, Weighted Movement
 - LOS, AP, Skill, Combat, Status, Hazard
 - AI, Enemy Intent, Map Generation
 - Camera, Input, UI, VFX, Save, Mobile 기능
@@ -158,7 +168,7 @@ Runtime Obstacle과 Walkable Surface 자체를 바꾸는 Terrain Effect는 다�
 
 - Runtime `ObstacleState`
 - Dynamic Terrain과 Surface Modifier
-- Height-aware BFS와 Movement
+- Path Reconstruction과 실제 Movement
 - Ghost, Flying, Jump, Teleport 등을 조합할 `TraversalContext` 또는 `MovementCapability`
 - Wall, Door, Phaseable Wall 등 Cell 사이를 막는 Edge/Link 단위 규칙
 - LOS
