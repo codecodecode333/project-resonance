@@ -3,7 +3,7 @@
 - Updated: 2026-09-03
 - Branch: `main`
 - Implementation base: `d8771dc` (already pushed)
-- Review base: `main` HEAD (Combat Prototype 005 implementation)
+- Review base: `587d322` (Combat Prototype 005 implementation)
 
 ## Current Milestone
 
@@ -14,7 +14,7 @@
 - 조회 전후 Unit/Terrain/Occupancy/Registry 상태 보존 검증
 - Unity EditMode Tests: 63/63 passed (Path: 15/15)
 - Unity compile errors: 0
-- Git handoff: verification complete; commit and immediate push requested by user
+- Git handoff: `587d322` pushed to `origin/main` on 2026-09-03; this follow-up updates only the handoff record
 
 ## Next Milestone (Proposed)
 
