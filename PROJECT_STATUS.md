@@ -3,7 +3,7 @@
 - Updated: 2026-09-03
 - Branch: `main`
 - Implementation base: `9ade52f` (already pushed)
-- Review base: `main` HEAD
+- Review base: `44c732c` (Combat Prototype 004 implementation)
 
 ## Current Milestone
 
@@ -14,7 +14,7 @@
 - 조회 전후 Unit/Terrain/Occupancy/Registry 상태 보존 검증
 - Unity EditMode Tests: 48/48 passed (BFS: 13/13)
 - Unity compile errors: 0
-- Git handoff: milestone 004 local commit at `main` HEAD; no push performed in this implementation task
+- Git handoff: `44c732c` pushed to `origin/main` on 2026-09-03; this follow-up updates only the handoff record
 
 ## Next Milestone
 
