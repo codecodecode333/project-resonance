@@ -67,7 +67,17 @@ Height 차이가 0 또는 1이면 이동 가능하고, 차이가 2이면 이동�
 
 - 공간 후보는 `GetOrthogonalNeighbors`, 탐색 허용은 `CanPassThrough`, 목적지 포함 여부는 `CanStopAt`으로 결정한다. BFS가 Height/Walkable/Team/Occupancy 규칙을 직접 재구현하지 않는다.
 - 아군 Cell은 탐색 가능하지만 목적지가 아니며, 뒤쪽 빈 Cell은 거리 안이면 목적지가 될 수 있다. 적군/Unknown Occupancy는 해당 경로의 탐색을 차단한다.
-- 계산은 순수 조회이며 Unit 위치, Terrain, Occupancy, Registry를 변경하지 않는다. 실제 Movement나 predecessor 저장은 없으며 Path Reconstruction은 별도 마일스톤이다.
+- 계산은 순수 조회이며 Unit 위치, Terrain, Occupancy, Registry를 변경하지 않는다. ReachabilityFinder는 predecessor를 저장하지 않으며 경로 복원은 별도 `PathFinder`의 책임이다.
+
+## Path Reconstruction
+
+`PathFinder.TryFindPath(mover, target, maxDistance, out path)`는 특정 Target까지 비용 1의 BFS 최단 경로를 계산한다. 최초 발견 시 `cameFrom[next] = current`를 기록하고, Target에서 Start까지 역추적한 뒤 순서를 뒤집는다. ReachabilityFinder를 호출하거나 공용 탐색 엔진으로 합치지 않는다.
+
+- 성공 Path는 실제 밟을 Step 순서이며 **Start 제외 / Target 포함**이다. 동일 길이의 여러 최단 경로 중 선택 순서는 보장하지 않는다.
+- `Start == Target`은 `CanStopAt(start)` 검사 없이 빈 Path로 성공한다. 그 외 Target은 `CanStopAt`을 만족해야 하며, 거리 초과·Grid 밖 Target·경로 없음은 `false`와 빈 Path를 반환한다.
+- 공간 후보는 `GetOrthogonalNeighbors`, 각 Step은 `CanPassThrough`로 판정한다. Height/Walkable/Team/Occupancy 규칙을 직접 검사하지 않는다. 아군은 중간 Step이 될 수 있지만, 아군·적군·Unknown 점유 Target은 불가하다.
+- 모든 Edge Cost는 평지·오르막·내리막 모두 1이며 `maxDistance`는 최대 Step 수다. null Mover, 음수 거리, 미배치 또는 Grid 밖 Mover는 Reachability와 같은 예외 정책을 사용한다.
+- Path Query는 Unit/Terrain/Occupancy/Registry 상태를 변경하지 않는다. 반환 Path를 실제 이동으로 적용하는 기능은 다음 단계의 별도 책임이다.
 
 ## Tilemap Mapping
 
@@ -159,7 +169,7 @@ Runtime Obstacle과 Walkable Surface 자체를 바꾸는 Terrain Effect는 다�
 
 - Tilemap, GridPresenter, World Position 변환, TerrainSide, Overlay
 - UnitView, ObstacleState, Dynamic Terrain
-- Path Reconstruction, 실제 Movement, A*, Dijkstra, Weighted Movement
+- 실제 Movement, A*, Dijkstra, Weighted Movement
 - LOS, AP, Skill, Combat, Status, Hazard
 - AI, Enemy Intent, Map Generation
 - Camera, Input, UI, VFX, Save, Mobile 기능
@@ -168,7 +178,7 @@ Runtime Obstacle과 Walkable Surface 자체를 바꾸는 Terrain Effect는 다�
 
 - Runtime `ObstacleState`
 - Dynamic Terrain과 Surface Modifier
-- Path Reconstruction과 실제 Movement
+- 경로를 적용하는 실제 Movement
 - Ghost, Flying, Jump, Teleport 등을 조합할 `TraversalContext` 또는 `MovementCapability`
 - Wall, Door, Phaseable Wall 등 Cell 사이를 막는 Edge/Link 단위 규칙
 - LOS
