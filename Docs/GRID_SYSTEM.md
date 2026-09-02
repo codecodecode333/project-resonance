@@ -93,16 +93,52 @@ Tilemap은 논리 상태를 표현하며 이동 가능 여부나 게임 규칙�
 
 ## Source of Truth
 
-`GridState`가 Grid 게임 상태의 Source of Truth다. AI, Pathfinding, LOS, Map Generation, Save, Tests는 `GridState`와 `CellState`를 기준으로 동작한다.
+`GridState`와 `CellState`는 Terrain/Surface 상태의 Source of Truth다. `GridOccupancy`는 Runtime Entity의 공간 점유 상태를, `UnitState`는 Unit 자체의 Runtime State를 담당한다. `UnitPlacementService`는 Unit 위치와 Occupancy를 함께 갱신해 두 상태를 일치시킨다.
 
-Tilemap의 Tile 유무를 조회해 게임 규칙을 판단하지 않는다. Tilemap은 `GridState`를 읽어 표현한다.
+AI, Pathfinding, LOS, Map Generation, Save, Tests는 필요한 Domain 상태를 합성해서 사용한다. Tilemap의 Tile 유무를 조회해 게임 규칙을 판단하지 않으며 Tilemap은 Domain 상태를 읽어 표현한다.
+
+## Terrain State and Runtime Occupancy
+
+`CellState`는 Height와 기본 Walkable 여부 같은 Terrain/Surface 상태만 가진다. `GridOccupancy`는 현재 Grid 공간을 점유하는 Runtime Entity의 별도 Spatial Index다.
+
+Terrain의 `IsWalkable`은 지형 자체가 기본적으로 이동 가능한지를 의미한다. Unit이나 Runtime Obstacle이 Cell을 막더라도 `CellState.IsWalkable`을 변경하지 않는다.
+
+`GridOccupancy`는 `GridPosition`과 일반적인 `EntityId`만 다룬다. Unit, Obstacle, GameObject의 구체 타입은 알지 않는다.
+
+## Runtime Obstacle Identity
+
+향후 게임 규칙 대상인 파괴 가능한 바위, 상자, 얼음벽, HP가 있는 구조물, 일정 시간이 지나면 사라지는 소환물은 `EntityId`와 `GridOccupancy`를 사용할 수 있다. 단순 Decoration에는 `EntityId`가 필요하지 않다.
+
+`GridOccupancy`는 Unit 전용 구조가 아니지만, 현재 단계에서는 `ObstacleState`를 구현하지 않는다.
+
+## Dynamic Walkable Surfaces
+
+Runtime Obstacle과 Walkable Surface 자체를 바꾸는 Terrain Effect는 다르다. 올라갈 수 없는 얼음벽은 Occupancy로 표현할 수 있지만, 솟아오른 대지나 임시 발판처럼 실제 Surface Height를 바꾸는 효과는 Occupancy로 표현하지 않는다.
+
+향후 필요하면 다음 모델을 검토할 수 있다.
+
+`BaseHeight + SurfaceModifier = EffectiveHeight`
+
+현재는 `BaseHeight`, `SurfaceModifier`, `EffectiveHeight`, Terrain Effect System을 구현하지 않으며 `CellState.Height`를 그대로 사용한다.
+
+## Future Traversal Composition
+
+향후 `CanTraverse(from, to)`는 다음 조건을 합성한다.
+
+1. 목적지가 Grid Bounds 내부인가
+2. 목적지 Terrain의 `CellState.IsWalkable`이 true인가
+3. 목적지가 Blocking Occupancy로 점유되지 않았는가
+4. `abs(from.Height - to.Height) <= 1`인가
+5. Special Traversal Rule을 만족하는가
+
+`GetOrthogonalNeighbors`는 계속 순수 공간 인접 조회만 담당한다.
 
 ## Explicit Non-Goals
 
 이번 단계에서는 다음을 구현하지 않는다.
 
 - Tilemap, GridPresenter, World Position 변환, TerrainSide, Overlay
-- Occupancy, UnitState, UnitView
+- UnitView, ObstacleState, Dynamic Terrain
 - BFS, A*, Pathfinding, Path Reconstruction, Movement
 - LOS, AP, Skill, Combat, Status, Hazard
 - AI, Enemy Intent, Map Generation
@@ -110,7 +146,8 @@ Tilemap의 Tile 유무를 조회해 게임 규칙을 판단하지 않는다. Til
 
 ## Future Extension Points
 
-- `UnitState`와 Occupancy
+- Runtime `ObstacleState`
+- Dynamic Terrain과 Surface Modifier
 - Height-aware BFS와 Movement
 - LOS
 - Map Generation

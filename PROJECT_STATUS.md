@@ -6,13 +6,13 @@
 
 ## Current Milestone
 
-`Combat Prototype 001 — Minimum Grid Domain` — **Complete**
+`Combat Prototype 002 — UnitState + Grid Occupancy` — **Complete**
 
-- Grid/Height/Tilemap 기준 문서화
-- 순수 C# Grid Domain 구현
-- Unity EditMode Tests: 11/11 passed
+- `EntityId`, `UnitState`, `GridOccupancy` 구현
+- Unit 최초 배치/제거 상태 일관성 구현
+- Unity EditMode Tests: 23/23 passed
 - Unity compile errors: 0
 
 ## Next Milestone
 
-`Combat Prototype 002 — UnitState + Occupancy`
+`Combat Prototype 003 — Height-aware Traversal Rules`
