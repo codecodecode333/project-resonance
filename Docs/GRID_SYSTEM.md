@@ -77,7 +77,23 @@ Height 차이가 0 또는 1이면 이동 가능하고, 차이가 2이면 이동�
 - `Start == Target`은 `CanStopAt(start)` 검사 없이 빈 Path로 성공한다. 그 외 Target은 `CanStopAt`을 만족해야 하며, 거리 초과·Grid 밖 Target·경로 없음은 `false`와 빈 Path를 반환한다.
 - 공간 후보는 `GetOrthogonalNeighbors`, 각 Step은 `CanPassThrough`로 판정한다. Height/Walkable/Team/Occupancy 규칙을 직접 검사하지 않는다. 아군은 중간 Step이 될 수 있지만, 아군·적군·Unknown 점유 Target은 불가하다.
 - 모든 Edge Cost는 평지·오르막·내리막 모두 1이며 `maxDistance`는 최대 Step 수다. null Mover, 음수 거리, 미배치 또는 Grid 밖 Mover는 Reachability와 같은 예외 정책을 사용한다.
-- Path Query는 Unit/Terrain/Occupancy/Registry 상태를 변경하지 않는다. 반환 Path를 실제 이동으로 적용하는 기능은 다음 단계의 별도 책임이다.
+- Path Query는 Unit/Terrain/Occupancy/Registry 상태를 변경하지 않는다. 검증된 이동의 상태 변경은 별도 `UnitMovementService`의 책임이다.
+
+## Unit Movement Domain
+
+`UnitMovementService.TryMove(mover, target, maxDistance, out path)`는 이미 배치된 Unit의 이동을 검증하고 최종 위치로 적용한다. 다음 세 값의 일치를 mutation 전에 확인하며, 성공 후에도 유지한다.
+
+`UnitState.Position == Occupancy.TryGetPosition(Unit.Id)`이고 `Occupancy.TryGetOccupant(Unit.Position) == Unit.Id`.
+
+- 입력과 양방향 점유 일관성 확인 → `PathFinder` 경로 검증 → `GridOccupancy.TryRelocate(id, start, target)` → `UnitState` internal 위치 갱신 순서다. 서비스는 Height/Walkable/Team/BFS 규칙을 재구현하지 않는다.
+- `TryRelocate`는 유효 ID, 출발점의 정방향·역방향 매핑, 빈 목적지, 서로 다른 좌표를 모두 검사한 뒤 두 맵을 변경한다. 거절 시 두 맵을 보존하며 Bounds/Traversal은 판단하지 않는다. 서비스에서 Release + Occupy를 따로 호출하지 않는다.
+- Unit 위치에는 public setter가 없다. `MoveFromTo(expectedFrom, target)`은 예상 출발점을 확인한다. 현재 Domain은 main-thread 동기 실행이고 조회·재배치 중 외부 콜백이 없으므로 사전 검증된 Unit 갱신은 결정적으로 성공한다.
+- 성공은 **Start → Target 한 번의 final relocation**이다. 중간 Cell에 Mover를 등록하지 않으므로 `S → Ally → T` 경로에서도 아군 위치와 점유는 그대로 남는다.
+- 반환 Path는 Start 제외/Target 포함의 route description이다. 반환 시 Domain은 이미 Target에 있으며, 중간 Cell은 현재 Occupancy state가 아니다. 향후 Presentation은 이 경로를 애니메이션에 사용할 수 있다.
+- 도달 불가·점유 Target·거리 부족·재배치 거절은 `false`와 빈 Path를 반환하며 Unit/Occupancy/Terrain/Registry를 보존한다. `Start == Target`은 일관성 검증 후 빈 Path로 성공하는 no-op이며 재배치하지 않는다.
+- null Mover·음수 거리·미배치는 명시적 입력 예외다. 기존 Unit/Occupancy 불일치는 `InvalidOperationException`으로 드러내며 조용히 복구하지 않는다. Grid 밖 Mover 검증은 PathFinder에 위임한다.
+
+Trap/Hazard/OnEnter/기회 공격/이동 중단이 필요해지면 별도 Movement Execution 또는 Combat Action 계층에서 경로를 순서대로 소비할 수 있다. 이번 단계에는 traversal event나 interruption framework를 구현하지 않는다.
 
 ## Tilemap Mapping
 
@@ -123,7 +139,7 @@ Tilemap은 논리 상태를 표현하며 이동 가능 여부나 게임 규칙�
 
 ## Source of Truth
 
-`GridState`와 `CellState`는 Terrain/Surface 상태의 Source of Truth다. `GridOccupancy`는 Runtime Entity의 공간 점유 상태를, `UnitState`는 Unit 자체의 Runtime State를 담당한다. `UnitPlacementService`는 Unit 위치와 Occupancy를 함께 갱신해 두 상태를 일치시킨다.
+`GridState`와 `CellState`는 Terrain/Surface 상태의 Source of Truth다. `GridOccupancy`는 Runtime Entity의 공간 점유 상태를, `UnitState`는 Unit 자체의 Runtime State를 담당한다. `UnitPlacementService`는 최초 배치/제거를, `UnitMovementService`는 배치된 Unit의 검증된 재배치를 조율하여 Unit 위치와 Occupancy를 일치시킨다.
 
 AI, Pathfinding, LOS, Map Generation, Save, Tests는 필요한 Domain 상태를 합성해서 사용한다. Tilemap의 Tile 유무를 조회해 게임 규칙을 판단하지 않으며 Tilemap은 Domain 상태를 읽어 표현한다.
 
@@ -169,7 +185,7 @@ Runtime Obstacle과 Walkable Surface 자체를 바꾸는 Terrain Effect는 다�
 
 - Tilemap, GridPresenter, World Position 변환, TerrainSide, Overlay
 - UnitView, ObstacleState, Dynamic Terrain
-- 실제 Movement, A*, Dijkstra, Weighted Movement
+- Movement Animation/Interruption, A*, Dijkstra, Weighted Movement
 - LOS, AP, Skill, Combat, Status, Hazard
 - AI, Enemy Intent, Map Generation
 - Camera, Input, UI, VFX, Save, Mobile 기능
@@ -178,7 +194,7 @@ Runtime Obstacle과 Walkable Surface 자체를 바꾸는 Terrain Effect는 다�
 
 - Runtime `ObstacleState`
 - Dynamic Terrain과 Surface Modifier
-- 경로를 적용하는 실제 Movement
+- 경로를 순서대로 소비하는 traversal effect와 Movement Execution
 - Ghost, Flying, Jump, Teleport 등을 조합할 `TraversalContext` 또는 `MovementCapability`
 - Wall, Door, Phaseable Wall 등 Cell 사이를 막는 Edge/Link 단위 규칙
 - LOS

@@ -2,22 +2,23 @@
 
 - Updated: 2026-09-03
 - Branch: `main`
-- Implementation base: `d8771dc` (already pushed)
-- Review base: `587d322` (Combat Prototype 005 implementation)
+- Implementation base: `13599c1` (already pushed)
+- Review base: this milestone's implementation commit (recorded after push)
 
 ## Current Milestone
 
-`Combat Prototype 005 — Path Reconstruction` — **Complete**
+`Combat Prototype 006 — Unit Movement Domain` — **Complete**
 
-- `PathFinder`: GridTraversal을 소비하는 거리 제한 최단 BFS + cameFrom 경로 복원
-- Start 제외/Target 포함, 제자리 빈 경로 성공, 아군 중간 통과, 점유 Target 거절
-- 조회 전후 Unit/Terrain/Occupancy/Registry 상태 보존 검증
-- Unity EditMode Tests: 63/63 passed (Path: 15/15)
-- Unity compile errors: 0
-- Git handoff: `587d322` pushed to `origin/main` on 2026-09-03; this follow-up updates only the handoff record
+- `UnitMovementService`: Unit/Occupancy 양방향 일관성 확인 → PathFinder 검증 → 최종 재배치 → internal Unit 위치 갱신
+- `GridOccupancy.TryRelocate`와 `UnitState.MoveFromTo(expectedFrom, target)` 추가; public Position setter 없음
+- 중간 Cell 점유 없이 Start → Target 한 번 적용, 아군 점유 보존, 제자리 빈 경로 no-op, 실패 시 전체 상태 보존
+- Path는 이동 완료 후 반환하는 향후 Presentation route; ReachabilityFinder/PathFinder/UnitPlacementService 및 LegacyReference 미변경
+- Unity EditMode Tests: 82/82 passed (Movement: 19/19, ally regression passed)
+- Unity compile errors: 0; test exit code: 0. 라이선스 토큰 갱신 오류 로그 1건은 테스트를 차단하지 않음
+- Git handoff: implementation and verification complete; commit and push requested by user
 
 ## Next Milestone (Proposed)
 
-`Combat Prototype 006 — Unit Movement Domain`
+`Combat Prototype 007 — Isometric Grid Presentation`
 
-경로를 Unit 위치와 Occupancy에 일관되게 적용하는 최소 도메인 단계. 설계 확인 후 진행하며 이번 작업에서는 구현하지 않음.
+현재 구현 commit을 ChatGPT에서 리뷰한 뒤 설계 확인 후 진행. 이번 작업에서는 Presentation/Animation/Input, AP/Turn, Hazard/OnEnter/Interruption 및 관련 프레임워크를 구현하지 않음.

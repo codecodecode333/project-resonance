@@ -52,6 +52,16 @@ namespace ProjectResonance.Units
             _position = position;
         }
 
+        internal void MoveFromTo(GridPosition expectedFrom, GridPosition target)
+        {
+            if (!_position.HasValue || _position.Value != expectedFrom)
+            {
+                throw new InvalidOperationException($"Unit {Id} is not placed at expected position {expectedFrom}.");
+            }
+
+            _position = target;
+        }
+
         internal void RemoveFromGrid()
         {
             if (!IsPlaced)

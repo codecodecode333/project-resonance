@@ -40,6 +40,26 @@ namespace ProjectResonance.Grid
             return true;
         }
 
+        public bool TryRelocate(EntityId entityId, GridPosition from, GridPosition to)
+        {
+            if (entityId.Value <= 0
+                || from == to
+                || !_occupantsByPosition.TryGetValue(from, out var currentOccupant)
+                || currentOccupant != entityId
+                || !_positionsByEntity.TryGetValue(entityId, out var occupiedPosition)
+                || occupiedPosition != from
+                || _occupantsByPosition.ContainsKey(to))
+            {
+                return false;
+            }
+
+            // All rejection paths precede mutation; this primitive has no traversal rules.
+            _occupantsByPosition.Add(to, entityId);
+            _occupantsByPosition.Remove(from);
+            _positionsByEntity[entityId] = to;
+            return true;
+        }
+
         public bool TryRelease(GridPosition position, EntityId entityId)
         {
             if (!_occupantsByPosition.TryGetValue(position, out var currentOccupant)

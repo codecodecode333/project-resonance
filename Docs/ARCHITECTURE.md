@@ -26,4 +26,6 @@
 - Animation
 - VFX
 
+Unit의 공간 상태 변경은 최초 배치/제거를 담당하는 `UnitPlacementService`와 검증된 이동을 담당하는 `UnitMovementService`가 조율한다. 두 서비스는 `UnitState.Position`과 양방향 `GridOccupancy`를 일치시키며 외부 public 위치 setter를 제공하지 않는다.
+
 실제 구현 클래스 구조는 Combat Prototype을 진행하며 필요한 범위에서 결정한다.
