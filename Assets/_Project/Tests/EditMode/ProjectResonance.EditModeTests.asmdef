@@ -2,7 +2,8 @@
   "name": "ProjectResonance.EditModeTests",
   "rootNamespace": "ProjectResonance.Tests",
   "references": [
-    "ProjectResonance.Runtime"
+    "ProjectResonance.Runtime",
+    "ProjectResonance.Presentation"
   ],
   "includePlatforms": [
     "Editor"

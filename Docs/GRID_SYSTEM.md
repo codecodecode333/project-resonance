@@ -97,7 +97,7 @@ Trap/Hazard/OnEnter/기회 공격/이동 중단이 필요해지면 별도 Moveme
 
 ## Tilemap Mapping
 
-향후 Unity 2D Presentation은 Isometric Z as Y Tilemap을 사용한다.
+Unity 2D Presentation은 Isometric Z as Y Tilemap을 사용한다. 변환은 별도 Presentation 어셈블리의 `GridPresentationMapper`가 담당하며 Domain은 Unity 타입을 참조하지 않는다.
 
 | Logical value | Tilemap value |
 | --- | --- |
@@ -109,24 +109,31 @@ Trap/Hazard/OnEnter/기회 공격/이동 중단이 필요해지면 별도 Moveme
 
 ## Tilemap Responsibility
 
-향후 Presentation 구조의 방향은 다음과 같다.
+`BattlePrototype.unity`의 현재 구조는 다음과 같다.
 
 ```text
-BattleGrid
-├─ TerrainTopTilemap
-├─ TerrainSideTilemap
-├─ OverlayTilemap
-├─ Props
-├─ Units
-└─ VFX
+BattlePrototypeRoot
+├─ BattleGrid (Grid: Isometric Z as Y, IsometricGridPresenter)
+│  ├─ TerrainTopTilemap
+│  ├─ TerrainSideTilemap
+│  └─ OverlayTilemap
+├─ PresentationBootstrap
+└─ Main Camera
 ```
 
-- `TerrainTopTilemap`: 지면 윗면
-- `TerrainSideTilemap`: Height 차이로 생기는 절벽과 벽면
-- `OverlayTilemap`: 이동/공격 범위, 선택 Cell, Enemy Intent, AOE 및 Path Preview
-- `Props`, `Units`, `VFX`: 기본적으로 GameObject Presentation
+- `TerrainTopTilemap`: 각 Domain Cell의 Height에 지면 윗면 한 장
+- `TerrainSideTilemap`: 고정 카메라에서 보이는 -X(좌), -Z(우) 이웃보다 높은 부분의 절벽 면. 높이 차이만큼 32px 측면을 쌓고, 맵 밖은 Height -1로 간주해 외곽 바닥 단을 표현한다. 이 -1은 표현용이며 Domain Cell에 저장하지 않는다.
+- `OverlayTilemap`: 현재 비어 있음. 이동/공격 범위·선택·Path Preview 등 기능은 후속 작업이다.
 
 Tilemap은 논리 상태를 표현하며 이동 가능 여부나 게임 규칙을 결정하지 않는다.
+
+`IsometricGridPresenter.Render`는 기존 Top/Side 타일을 지우고 GridState를 읽어 다시 배치한다. `BattlePrototypeBootstrap`은 10×8 고정 Demo GridState(Height 0/1/2)를 조립한다. 저장된 Scene에도 타일이 있어 편집 중 바로 보이며, Play 시작 시 같은 Domain 샘플로 재렌더한다. Unit·Input·이동 실행은 포함하지 않는다.
+
+실제 Unity URP 렌더 캡처(2026-09-03):
+
+![BattlePrototype: Height 0/1/2 terrain](Images/BattlePrototype.png)
+
+Grid Cell Size는 `(1, 0.5, 1)`, Tile Anchor는 `(0,0,0)`이며 Height 1은 화면 Y 0.25(32px)에 대응한다. Top/Side는 같은 sorting order의 Individual 모드로 서로 섞여 정렬되고, URP `Renderer2D`의 Custom Axis는 `(0,1,-0.26)`이다. 이 설정은 [Unity의 Isometric Z as Y 정렬 기준](https://unity.com/blog/engine-platform/isometric-2d-environments-with-tilemap)을 따른다. 카메라는 Orthographic, size 3.125, 위치 `(0.5,2,-10)`, 중립 청회색 배경이다.
 
 ## Tile Art Baseline
 
@@ -136,6 +143,19 @@ Tilemap은 논리 상태를 표현하며 이동 가능 여부나 게임 규칙�
 - 기본 PPU: 128
 
 이 값은 Art/Presentation 기준이며 Grid Domain에 하드코딩하지 않는다.
+
+현재 `Art/Environment/Tiles/Prototype`에는 GrassTop/GrassTopVariation, CliffLeft/CliffRight/CliffBoth의 PNG와 Tile 에셋이 있다. 모두 128×64, Sprite Single, PPU 128, Point, 무압축, mipmap 없음이다. Top pivot은 `(0.5,0.5)`, 측면은 `(0.5,1)`이며 정확한 투명 픽셀 외곽 보존을 위해 Full Rect mesh를 쓴다. URP 2D Unlit Material로 조명 없이 읽히는 임시 아트이며 최종 상용 아트가 아니다.
+
+원본 질감은 built-in imagegen으로 생성했고 `Editor/GridPresentation/ArtSource`에 최종 프롬프트와 함께 보관한다. Editor 메뉴 `ProjectResonance > Prototype > Rebuild Grid Assets and Scene`은 원본에서 PNG/Tile/Scene을 다시 만든다(생성 에셋과 Scene 덮어쓰기 확인 있음). 런타임 텍스처 생성이나 외부 API 호출은 없다.
+
+### Prototype visual verification
+
+1. `Assets/_Project/Scenes/BattlePrototype.unity`를 열고 Game 뷰를 16:10(권장 1280×800)으로 설정한다. Play 시에도 같은 맵이 나타나야 한다.
+2. Height 0 평지, 중앙 Height 1 단, Height 2 고지를 구분한다. `(7,3)`의 Height 2와 앞쪽 `(7,2)`의 Height 0 사이에는 2단 측면이 보인다.
+3. Top과 어두운 좌/우 측면이 붙어 있고 공중 틈·잘못된 겹침이 없는지 확인한다. Mapper `(3,5), Height 2 → (3,5,2)` 규칙과 Cell의 실제 Height를 구분한다.
+4. 픽셀·윤곽선이 흐리지 않은지, Overlay가 비어 있고 Unit/Input/전투 UI가 없는지, Console에 게임 코드 오류가 없는지 확인한다.
+
+Editor 메뉴 `Capture Grid Preview`는 실제 URP 카메라의 1280×800 렌더를 `Logs/BattlePrototype-preview.png`에 저장한다. CLI 실행은 그래픽 장치가 필요하므로 `-nographics`를 사용하지 않는다. 고정 시점·작은 타일 세트만 지원하며 뒷면/회전 카메라/복잡한 cliff autotile, 동적 카메라 맞춤, 최종 아트 품질은 이번 범위가 아니다.
 
 ## Source of Truth
 
@@ -183,12 +203,12 @@ Runtime Obstacle과 Walkable Surface 자체를 바꾸는 Terrain Effect는 다�
 
 이번 단계에서는 다음을 구현하지 않는다.
 
-- Tilemap, GridPresenter, World Position 변환, TerrainSide, Overlay
+- Overlay 기능, cliff autotile, 카메라 조작
 - UnitView, ObstacleState, Dynamic Terrain
 - Movement Animation/Interruption, A*, Dijkstra, Weighted Movement
 - LOS, AP, Skill, Combat, Status, Hazard
 - AI, Enemy Intent, Map Generation
-- Camera, Input, UI, VFX, Save, Mobile 기능
+- Input, UI, VFX, Save, Mobile 기능
 
 ## Future Extension Points
 
@@ -199,5 +219,5 @@ Runtime Obstacle과 Walkable Surface 자체를 바꾸는 Terrain Effect는 다�
 - Wall, Door, Phaseable Wall 등 Cell 사이를 막는 Edge/Link 단위 규칙
 - LOS
 - Map Generation
-- Isometric Tilemap Presentation
+- Unit Presentation과 Isometric Overlay
 - Height를 왜곡하지 않는 `TraversalLink` 계열 연결: 계단, 점프, 일방통행, 사다리, 특수 이동

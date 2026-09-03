@@ -1,0 +1,6 @@
+{
+  "name": "ProjectResonance.Presentation",
+  "rootNamespace": "ProjectResonance.Presentation",
+  "references": ["ProjectResonance.Runtime"],
+  "noEngineReferences": false
+}
