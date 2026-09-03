@@ -3,7 +3,7 @@
 - Updated: 2026-09-03
 - Branch: `main`
 - Implementation base: `98b5d5f` (already pushed)
-- Review base: this milestone's implementation commit (recorded after push)
+- Review base: `7e02fcb` (Combat Prototype 007 implementation)
 
 ## Current Milestone
 
@@ -15,7 +15,7 @@
 - Unity 실제 URP 캡처에서 단차·절벽·픽셀 정렬 확인 (`Docs/Images/BattlePrototype.png`); Play 버튼을 통한 대화형 검증은 미실시, 수동 절차는 GRID_SYSTEM 문서에 기록
 - Unity EditMode Tests: 84/84 passed (Presentation: 2/2); compile errors: 0, test exit code: 0
 - 라이선스 토큰 갱신 오류 로그 1건/실행은 생성·렌더·테스트를 차단하지 않음. Domain 코드와 LegacyReference 미변경
-- Git handoff: implementation and verification complete; commit and push requested by user
+- Git handoff: `7e02fcb` pushed to `origin/main` on 2026-09-03; this follow-up updates only the handoff record
 
 ## Next Milestone (Proposed)
 
