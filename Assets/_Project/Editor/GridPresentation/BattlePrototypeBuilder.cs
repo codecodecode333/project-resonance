@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using ProjectResonance.Core;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -28,28 +27,24 @@ namespace ProjectResonance.Presentation.Editor
         public static void Build()
         {
             Directory.CreateDirectory(ArtRoot);
-            var grass = LoadSource("GrassTexture.png");
-            var cliff = LoadSource("CliffTexture.png");
+            var grass = LoadSource("GrassBlockSource.png");
+            var alternate = LoadSource("GrassBlockVariationSource.png");
             try
             {
-                WriteTop(grass, "GrassTop", false);
-                WriteTop(grass, "GrassTopVariation", true);
-                WriteSide(cliff, "CliffLeft", true, false);
-                WriteSide(cliff, "CliffRight", false, true);
-                WriteSide(cliff, "CliffBoth", true, true);
+                MatchVariationAlpha(grass, alternate);
+                WriteBlock(grass, "GrassBlock");
+                WriteBlock(alternate, "GrassBlockVariation");
             }
             finally
             {
                 Object.DestroyImmediate(grass);
-                Object.DestroyImmediate(cliff);
+                Object.DestroyImmediate(alternate);
             }
             AssetDatabase.Refresh();
 
-            var top = CreateTile("GrassTop", new Vector2(0.5f, 0.5f));
-            var variation = CreateTile("GrassTopVariation", new Vector2(0.5f, 0.5f));
-            var left = CreateTile("CliffLeft", new Vector2(0.5f, 1f));
-            var right = CreateTile("CliffRight", new Vector2(0.5f, 1f));
-            var both = CreateTile("CliffBoth", new Vector2(0.5f, 1f));
+            // Top diamond center is (64, 96) in bottom-origin sprite pixels.
+            var block = CreateTile("GrassBlock", new Vector2(0.5f, 0.75f));
+            var variation = CreateTile("GrassBlockVariation", new Vector2(0.5f, 0.75f));
             var materialPath = "Assets/_Project/Materials/PrototypeTerrain.mat";
             var shader = Shader.Find("Universal Render Pipeline/2D/Sprite-Unlit-Default");
             if (shader == null) throw new InvalidOperationException("URP 2D unlit sprite shader is missing.");
@@ -68,18 +63,13 @@ namespace ProjectResonance.Presentation.Editor
             var grid = gridObject.AddComponent<UnityEngine.Grid>();
             grid.cellLayout = GridLayout.CellLayout.IsometricZAsY;
             grid.cellSize = new Vector3(1f, 0.5f, 1f);
-            var topMap = CreateTilemap("TerrainTopTilemap", gridObject.transform, material);
-            var sideMap = CreateTilemap("TerrainSideTilemap", gridObject.transform, material);
+            var blockMap = CreateTilemap("TerrainBlockTilemap", gridObject.transform, material);
             var overlay = CreateTilemap("OverlayTilemap", gridObject.transform, material);
             overlay.GetComponent<TilemapRenderer>().sortingOrder = 10;
-            var presenter = gridObject.AddComponent<IsometricGridPresenter>();
-            Assign(presenter, "terrainTop", topMap);
-            Assign(presenter, "terrainSide", sideMap);
-            Assign(presenter, "grassTop", top);
-            Assign(presenter, "grassTopVariation", variation);
-            Assign(presenter, "cliffLeft", left);
-            Assign(presenter, "cliffRight", right);
-            Assign(presenter, "cliffBoth", both);
+            var presenter = gridObject.AddComponent<IsometricBlockGridPresenter>();
+            Assign(presenter, "terrainBlocks", blockMap);
+            Assign(presenter, "grassBlock", block);
+            Assign(presenter, "grassBlockVariation", variation);
             var bootstrap = Child("PresentationBootstrap", root.transform).AddComponent<BattlePrototypeBootstrap>();
             Assign(bootstrap, "presenter", presenter);
             bootstrap.RenderDemo();
@@ -99,17 +89,17 @@ namespace ProjectResonance.Presentation.Editor
             camera.transparencySortAxis = new Vector3(0, 1, -0.26f);
             cameraObject.transform.position = new Vector3(0.5f, 2f, -10f);
 
-            // Validate Unity's actual projection against the 32-pixel cliff step before saving.
+            // Validate Unity's actual projection against the 32-pixel block step before saving.
             var heightStep = grid.CellToWorld(new Vector3Int(0, 0, 1)) - grid.CellToWorld(Vector3Int.zero);
             if (Mathf.Abs(heightStep.y - 0.25f) > 0.0001f)
                 throw new InvalidOperationException($"Unexpected height projection: {heightStep}.");
-            if (topMap.GetUsedTilesCount() == 0 || sideMap.GetUsedTilesCount() == 0)
+            if (blockMap.GetUsedTilesCount() != 2)
                 throw new InvalidOperationException("Prototype terrain was not rendered.");
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene, ScenePath);
             AssetDatabase.SaveAssets();
-            Debug.Log($"BattlePrototype saved: 10x8, Height 0/1/2, height step {heightStep}; top/side populated, overlay empty.");
+            Debug.Log($"BattlePrototype saved: 10x8, Height 0/1/2, height step {heightStep}; block columns populated, overlay empty.");
         }
 
         private static Texture2D LoadSource(string name)
@@ -120,69 +110,69 @@ namespace ProjectResonance.Presentation.Editor
             return texture;
         }
 
-        private static Color Sample(Texture2D source, float u, float v)
+        private static void WriteBlock(Texture2D source, string name)
         {
-            // Sample a small pixel grid, not a bilinear/blurred rescale of the generated source.
-            var x = (Mathf.FloorToInt(Mathf.Repeat(u, 1f) * 64) + 0.5f) / 64f;
-            var y = (Mathf.FloorToInt(Mathf.Repeat(v, 1f) * 64) + 0.5f) / 64f;
-            return source.GetPixel((int)(x * source.width), (int)(y * source.height));
-        }
+            // Crop transparent margins and point-resize the COMPLETE authored block.
+            // No face projection, texture synthesis, recoloring, or runtime generation.
+            var sourcePixels = source.GetPixels32();
+            var minX = source.width;
+            var minY = source.height;
+            var maxX = -1;
+            var maxY = -1;
+            var hasTransparency = false;
+            for (var y = 0; y < source.height; y++)
+            {
+                for (var x = 0; x < source.width; x++)
+                {
+                    var alpha = sourcePixels[y * source.width + x].a;
+                    hasTransparency |= alpha == 0;
+                    if (alpha < 128) continue;
+                    minX = Mathf.Min(minX, x);
+                    maxX = Mathf.Max(maxX, x);
+                    minY = Mathf.Min(minY, y);
+                    maxY = Mathf.Max(maxY, y);
+                }
+            }
+            if (!hasTransparency || maxX < minX || maxY < minY)
+                throw new InvalidOperationException($"{name} needs a nonempty block with genuine transparent alpha.");
 
-        private static void WriteTop(Texture2D source, string name, bool variation)
-        {
-            var pixels = new Color[128 * 64];
-            for (var y = 0; y < 64; y++)
+            // A 128x64 diamond plus a 32px wall occupies 128x96; bottom 32px stay empty.
+            var pixels = new Color32[128 * 128];
+            for (var y = 0; y < 96; y++)
             {
                 for (var x = 0; x < 128; x++)
                 {
-                    var dx = (x + 0.5f - 64f) / 64f;
-                    var dy = (y + 0.5f - 32f) / 32f;
-                    var edge = Mathf.Abs(dx) + Mathf.Abs(dy);
-                    if (edge > 1f) continue;
-                    var color = Sample(source, (dx + dy + 1f) * 0.16f + (variation ? 0.37f : 0f),
-                        (dy - dx + 1f) * 0.16f + (variation ? 0.19f : 0f));
-                    color = Color.Lerp(color, new Color(0.45f, 0.60f, 0.29f), 0.25f);
-                    if (variation) color *= new Color(0.95f, 1.02f, 1.05f, 1f);
-                    if (edge > 0.965f) color *= dy >= 0 ? 1.13f : 0.68f;
-                    else if (edge > 0.925f && dy < 0) color *= 0.9f;
-                    color.a = 1f;
-                    pixels[y * 128 + x] = color;
+                    var sx = minX + (int)((x + 0.5f) * (maxX - minX + 1) / 128);
+                    var sy = minY + (int)((y + 0.5f) * (maxY - minY + 1) / 96);
+                    pixels[(y + 32) * 128 + x] = sourcePixels[sy * source.width + sx];
                 }
             }
-            WritePng(name, pixels);
-        }
-
-        private static void WriteSide(Texture2D source, string name, bool left, bool right)
-        {
-            var pixels = new Color[128 * 64];
-            for (var y = 0; y < 64; y++)
+            var texture = new Texture2D(128, 128, TextureFormat.RGBA32, false);
+            try
             {
-                for (var x = 0; x < 128; x++)
-                {
-                    var isLeft = x < 64;
-                    if (isLeft ? !left : !right) continue;
-                    var upperEdge = 32f + Mathf.Abs(x + 0.5f - 64f) * 0.5f;
-                    var depth = upperEdge - (y + 0.5f);
-                    if (depth < 0f || depth >= 32f) continue;
-                    var u = isLeft ? (x + 0.5f) / 64f : (x - 63.5f) / 64f;
-                    var color = Sample(source, u * 0.5f, depth / 128f);
-                    color *= isLeft ? 1.18f : 0.84f;
-                    if (depth < 2f) color *= 0.75f;
-                    if (x == 63 || x == 64) color *= 0.85f;
-                    color.a = 1f;
-                    pixels[y * 128 + x] = color;
-                }
+                texture.SetPixels32(pixels);
+                texture.Apply();
+                File.WriteAllBytes($"{ArtRoot}/{name}.png", texture.EncodeToPNG());
             }
-            WritePng(name, pixels);
+            finally
+            {
+                Object.DestroyImmediate(texture);
+            }
         }
 
-        private static void WritePng(string name, Color[] pixels)
+        private static void MatchVariationAlpha(Texture2D source, Texture2D variation)
         {
-            var texture = new Texture2D(128, 64, TextureFormat.RGBA32, false);
-            texture.SetPixels(pixels);
-            texture.Apply();
-            File.WriteAllBytes($"{ArtRoot}/{name}.png", texture.EncodeToPNG());
-            Object.DestroyImmediate(texture);
+            // The generated variant shares the source framing but arrived as RGB.
+            // Reuse the authored silhouette so both adjacent tile variants fit identically.
+            if (source.width != variation.width || source.height != variation.height)
+                throw new InvalidOperationException("Block variation must match the base source canvas.");
+            var silhouette = source.GetPixels32();
+            var pixels = variation.GetPixels32();
+            for (var i = 0; i < pixels.Length; i++) pixels[i].a = silhouette[i].a;
+            // LoadImage may change an RGB PNG's texture format, so restore alpha storage.
+            variation.Reinitialize(source.width, source.height, TextureFormat.RGBA32, false);
+            variation.SetPixels32(pixels);
+            variation.Apply();
         }
 
         private static Tile CreateTile(string name, Vector2 pivot)

@@ -113,49 +113,55 @@ Unity 2D Presentation은 Isometric Z as Y Tilemap을 사용한다. 변환은 별
 
 ```text
 BattlePrototypeRoot
-├─ BattleGrid (Grid: Isometric Z as Y, IsometricGridPresenter)
-│  ├─ TerrainTopTilemap
-│  ├─ TerrainSideTilemap
+├─ BattleGrid (Grid: Isometric Z as Y, IsometricBlockGridPresenter)
+│  ├─ TerrainBlockTilemap
 │  └─ OverlayTilemap
 ├─ PresentationBootstrap
 └─ Main Camera
 ```
 
-- `TerrainTopTilemap`: 각 Domain Cell의 Height에 지면 윗면 한 장
-- `TerrainSideTilemap`: 고정 카메라에서 보이는 -X(좌), -Z(우) 이웃보다 높은 부분의 절벽 면. 높이 차이만큼 32px 측면을 쌓고, 맵 밖은 Height -1로 간주해 외곽 바닥 단을 표현한다. 이 -1은 표현용이며 Domain Cell에 저장하지 않는다.
+- `TerrainBlockTilemap`: 윗면·좌우 측면·명암을 포함한 완성형 블록을 배치한다. Height N이면 같은 블록을 level 0..N에 쌓는다(B안). Height 0/1/2는 1/2/3장, 윗면 간격은 32px다. 두 단계 단차나 고립 고지에도 바닥이 비지 않도록 선택했다.
+- 아래층은 시각적 지지대일 뿐 별도의 논리 Cell/Walkable Surface/Occupancy가 아니다. 위층과 앞쪽 블록이 가리는 면은 개별 스프라이트 정렬에 맡기며 이웃별 cliff 조합은 하지 않는다.
 - `OverlayTilemap`: 현재 비어 있음. 이동/공격 범위·선택·Path Preview 등 기능은 후속 작업이다.
 
 Tilemap은 논리 상태를 표현하며 이동 가능 여부나 게임 규칙을 결정하지 않는다.
 
-`IsometricGridPresenter.Render`는 기존 Top/Side 타일을 지우고 GridState를 읽어 다시 배치한다. `BattlePrototypeBootstrap`은 10×8 고정 Demo GridState(Height 0/1/2)를 조립한다. 저장된 Scene에도 타일이 있어 편집 중 바로 보이며, Play 시작 시 같은 Domain 샘플로 재렌더한다. Unit·Input·이동 실행은 포함하지 않는다.
+`IsometricBlockGridPresenter.Render`는 기존 블록 타일을 지우고 GridState를 읽어 다시 배치한다. 변형은 `(X*3 + Z*7) % 5 == 0`인 열에만 사용하며 층마다 같은 에셋을 쓴다. `BattlePrototypeBootstrap`의 기존 10×8 샘플은 유지했다(Height 0: 53칸, 1: 14칸, 2: 13칸; 시각 블록 총 120장). 저장된 Scene에도 타일이 있어 편집 중 바로 보이며, Play 시작 시 같은 Domain 샘플로 재렌더한다. Unit·Input·이동 실행은 포함하지 않는다.
 
 실제 Unity URP 렌더 캡처(2026-09-03):
 
 ![BattlePrototype: Height 0/1/2 terrain](Images/BattlePrototype.png)
 
-Grid Cell Size는 `(1, 0.5, 1)`, Tile Anchor는 `(0,0,0)`이며 Height 1은 화면 Y 0.25(32px)에 대응한다. Top/Side는 같은 sorting order의 Individual 모드로 서로 섞여 정렬되고, URP `Renderer2D`의 Custom Axis는 `(0,1,-0.26)`이다. 이 설정은 [Unity의 Isometric Z as Y 정렬 기준](https://unity.com/blog/engine-platform/isometric-2d-environments-with-tilemap)을 따른다. 카메라는 Orthographic, size 3.125, 위치 `(0.5,2,-10)`, 중립 청회색 배경이다.
+비교용 [기존 split 방식 캡처](Images/BattlePrototype-Split.png)는 같은 맵·카메라다. 실제 캡처에서 단차·밝은 윗면과 어두운 측면의 구분은 선명하고, 배치 코드는 단순해졌다. 다만 평지 Cell 경계는 기존 split보다 약하고 잔디 채도·반복 무늬가 강하다. 층마다 잔디 띠가 반복되고 고지가 뒤쪽 낮은 칸을 가릴 수 있는 점도 한계다. 따라서 block 방식이 전술 가독성에서 더 낫다고 아직 확정하지 않는다. 이는 007 표현 방향 검증이며 최종 상용맵 제작이나 새 gameplay milestone이 아니다.
+
+Grid Cell Size는 `(1, 0.5, 1)`, Tile Anchor는 `(0,0,0)`이며 Height 1은 화면 Y 0.25(32px)에 대응한다. 블록은 Individual 모드로 정렬되고, URP `Renderer2D`의 Custom Axis는 `(0,1,-0.26)`이다. 이 설정은 [Unity의 Isometric Z as Y 정렬 기준](https://unity.com/blog/engine-platform/isometric-2d-environments-with-tilemap)을 따른다. 카메라는 Orthographic, size 3.125, 위치 `(0.5,2,-10)`, 중립 청회색 배경이다.
 
 ## Tile Art Baseline
 
-- 형태: Isometric Diamond
-- 종횡비: 2:1
-- Prototype source size: 128×64 px
+- 형태: 윗면과 측면이 연결된 Single Block Sprite
+- 윗면: 128×64 px, 2:1 diamond
+- 최종 캔버스: 128×128 px (블록 128×96 + 아래쪽 투명 여백 32px)
+- 높이 단계: 32px
 - 기본 PPU: 128
 
 이 값은 Art/Presentation 기준이며 Grid Domain에 하드코딩하지 않는다.
 
-현재 `Art/Environment/Tiles/Prototype`에는 GrassTop/GrassTopVariation, CliffLeft/CliffRight/CliffBoth의 PNG와 Tile 에셋이 있다. 모두 128×64, Sprite Single, PPU 128, Point, 무압축, mipmap 없음이다. Top pivot은 `(0.5,0.5)`, 측면은 `(0.5,1)`이며 정확한 투명 픽셀 외곽 보존을 위해 Full Rect mesh를 쓴다. URP 2D Unlit Material로 조명 없이 읽히는 임시 아트이며 최종 상용 아트가 아니다.
+현재 `Art/Environment/Tiles/Prototype`에는 `GrassBlock`, `GrassBlockVariation`의 실제 PNG와 Tile 에셋이 있다. Sprite Single, PPU 128, Point, 무압축, mipmap 없음, Full Rect mesh다. Pivot `(0.5,0.75)`는 윗면 중심(하단 원점 기준 64,96px)을 Cell 위치에 맞춘다. URP 2D Unlit Material로 조명 없이 읽히는 프로토타입 아트다. 향후 1×1 인간형 Unit의 96×128px 기준은 참고만 하며 캐릭터는 아직 구현하지 않았다.
 
-원본 질감은 built-in imagegen으로 생성했고 `Editor/GridPresentation/ArtSource`에 최종 프롬프트와 함께 보관한다. Editor 메뉴 `ProjectResonance > Prototype > Rebuild Grid Assets and Scene`은 원본에서 PNG/Tile/Scene을 다시 만든다(생성 에셋과 Scene 덮어쓰기 확인 있음). 런타임 텍스처 생성이나 외부 API 호출은 없다.
+완성형 아이소메트릭 블록 원본은 built-in imagegen으로 새로 생성했고 `Editor/GridPresentation/ArtSource`에 프롬프트와 함께 보관한다. Editor 메뉴 `ProjectResonance > Prototype > Rebuild Grid Assets and Scene`은 동일 구도의 변형에 기본형 알파를 공유한 뒤 투명 여백 제거·최근접 리사이즈로 PNG/Tile/Scene을 다시 만든다(덮어쓰기 확인 있음). 이전 평면 텍스처 투영·split 면 합성은 제거했다. 런타임 텍스처 생성이나 외부 API 호출은 없다.
 
 ### Prototype visual verification
 
 1. `Assets/_Project/Scenes/BattlePrototype.unity`를 열고 Game 뷰를 16:10(권장 1280×800)으로 설정한다. Play 시에도 같은 맵이 나타나야 한다.
 2. Height 0 평지, 중앙 Height 1 단, Height 2 고지를 구분한다. `(7,3)`의 Height 2와 앞쪽 `(7,2)`의 Height 0 사이에는 2단 측면이 보인다.
-3. Top과 어두운 좌/우 측면이 붙어 있고 공중 틈·잘못된 겹침이 없는지 확인한다. Mapper `(3,5), Height 2 → (3,5,2)` 규칙과 Cell의 실제 Height를 구분한다.
+3. 완성 블록의 윗면과 좌/우 측면, 1/2/3층 열이 이어지는지 확인한다. 공중 틈·잘못된 겹침이 없어야 한다. Mapper `(3,5), Height 2 → (3,5,2)` 규칙과 아래층 시각 타일을 구분한다.
 4. 픽셀·윤곽선이 흐리지 않은지, Overlay가 비어 있고 Unit/Input/전투 UI가 없는지, Console에 게임 코드 오류가 없는지 확인한다.
 
-Editor 메뉴 `Capture Grid Preview`는 실제 URP 카메라의 1280×800 렌더를 `Logs/BattlePrototype-preview.png`에 저장한다. CLI 실행은 그래픽 장치가 필요하므로 `-nographics`를 사용하지 않는다. 고정 시점·작은 타일 세트만 지원하며 뒷면/회전 카메라/복잡한 cliff autotile, 동적 카메라 맞춤, 최종 아트 품질은 이번 범위가 아니다.
+5. 같은 카메라의 split 캡처와 비교해 한 칸의 경계·높이·전술 보드 느낌을 평가한다. 가려진 낮은 칸은 현재 고정 시점의 한계이며 클릭 판정이나 가림 처리로 해결하지 않는다.
+
+Editor 메뉴 `Capture Grid Preview`는 실제 URP 카메라의 1280×800 렌더를 `Logs/BattlePrototype-preview.png`에 저장한다. CLI 실행은 그래픽 장치가 필요하므로 `-nographics`를 사용하지 않는다. 고정 시점·작은 블록 세트만 지원하며 뒷면/회전 카메라/복잡한 autotile, 동적 카메라 맞춤, 최종 아트 품질은 이번 범위가 아니다.
+
+2026-09-03 검증: 저장 Scene 재오픈, Bootstrap 재렌더, 실제 URP 카메라 캡처를 확인했다. 1280×800에서 단차·층 연결·픽셀 선명도와 split 비교를 시각 검사했다. Play 버튼을 통한 대화형 Game View/Console 검증은 미실시이며 위 절차로 확인할 수 있다.
 
 ## Source of Truth
 

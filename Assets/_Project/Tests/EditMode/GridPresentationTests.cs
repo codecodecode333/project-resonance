@@ -22,24 +22,18 @@ namespace ProjectResonance.Tests.EditMode
         }
 
         [Test]
-        public void RenderUsesDomainHeightsExposesOnlyFrontCliffsAndClearsStaleTiles()
+        public void RenderBuildsWholeBlockColumnsWithoutChangingDomainAndClearsStaleTiles()
         {
             var root = new GameObject("TestGrid", typeof(UnityEngine.Grid));
-            var top = MakeMap(root, "Top");
-            var side = MakeMap(root, "Side");
-            var presenter = root.AddComponent<IsometricGridPresenter>();
+            var blocks = MakeMap(root, "Blocks");
+            var presenter = root.AddComponent<IsometricBlockGridPresenter>();
             var grass = ScriptableObject.CreateInstance<Tile>();
-            var left = ScriptableObject.CreateInstance<Tile>();
-            var right = ScriptableObject.CreateInstance<Tile>();
-            var both = ScriptableObject.CreateInstance<Tile>();
+            var variation = ScriptableObject.CreateInstance<Tile>();
             try
             {
-                Assign(presenter, "terrainTop", top);
-                Assign(presenter, "terrainSide", side);
-                Assign(presenter, "grassTop", grass);
-                Assign(presenter, "cliffLeft", left);
-                Assign(presenter, "cliffRight", right);
-                Assign(presenter, "cliffBoth", both);
+                Assign(presenter, "terrainBlocks", blocks);
+                Assign(presenter, "grassBlock", grass);
+                Assign(presenter, "grassBlockVariation", variation);
                 var grid = new GridState(3, 3);
                 var center = new GridPosition(1, 1);
                 grid.SetHeight(center, 2);
@@ -48,35 +42,38 @@ namespace ProjectResonance.Tests.EditMode
 
                 presenter.Render(grid);
 
-                Assert.That(top.GetTile(new Vector3Int(1, 1, 2)), Is.SameAs(grass));
-                Assert.That(top.HasTile(new Vector3Int(1, 1, 0)), Is.False);
-                Assert.That(side.GetTile(new Vector3Int(1, 1, 1)), Is.SameAs(right));
-                Assert.That(side.GetTile(new Vector3Int(1, 1, 2)), Is.SameAs(both));
-                Assert.That(side.HasTile(new Vector3Int(1, 1, 0)), Is.False);
-                Assert.That(side.GetTile(Vector3Int.zero), Is.SameAs(both));
+                for (var level = 0; level <= 2; level++)
+                    Assert.That(blocks.GetTile(new Vector3Int(1, 1, level)), Is.SameAs(variation));
+                Assert.That(blocks.HasTile(new Vector3Int(1, 1, 3)), Is.False);
+                Assert.That(blocks.GetTile(new Vector3Int(0, 1, 0)), Is.SameAs(grass));
+                Assert.That(blocks.GetTile(new Vector3Int(0, 1, 1)), Is.SameAs(grass));
+                Assert.That(blocks.HasTile(new Vector3Int(0, 1, 2)), Is.False);
+                Assert.That(blocks.GetTile(Vector3Int.zero), Is.SameAs(variation));
+                Assert.That(blocks.HasTile(new Vector3Int(0, 0, 1)), Is.False);
                 Assert.That(grid.GetCell(center).Height, Is.EqualTo(2));
                 Assert.That(grid.GetCell(center).IsWalkable, Is.False);
                 Assert.That(grid.GetCell(new GridPosition(0, 1)).Height, Is.EqualTo(1));
                 Assert.Throws<ArgumentNullException>(() => presenter.Render(null));
-                Assert.That(top.GetTile(new Vector3Int(1, 1, 2)), Is.SameAs(grass));
+                Assert.That(blocks.GetTile(new Vector3Int(1, 1, 2)), Is.SameAs(variation));
+                Assign(presenter, "grassBlock", null);
+                Assert.Throws<InvalidOperationException>(() => presenter.Render(grid));
+                Assert.That(blocks.GetTile(new Vector3Int(1, 1, 2)), Is.SameAs(variation));
+                Assign(presenter, "grassBlock", grass);
 
                 grid.SetHeight(center, 0);
+                Assign(presenter, "grassBlockVariation", null);
                 presenter.Render(grid);
-                Assert.That(top.GetTile(new Vector3Int(1, 1, 0)), Is.SameAs(grass));
-                Assert.That(top.HasTile(new Vector3Int(1, 1, 2)), Is.False);
-                Assert.That(side.HasTile(new Vector3Int(1, 1, 1)), Is.False);
-                Assert.That(side.HasTile(new Vector3Int(1, 1, 2)), Is.False);
+                Assert.That(blocks.GetTile(new Vector3Int(1, 1, 0)), Is.SameAs(grass));
+                Assert.That(blocks.HasTile(new Vector3Int(1, 1, 1)), Is.False);
+                Assert.That(blocks.HasTile(new Vector3Int(1, 1, 2)), Is.False);
                 presenter.Clear();
-                Assert.That(top.GetUsedTilesCount(), Is.Zero);
-                Assert.That(side.GetUsedTilesCount(), Is.Zero);
+                Assert.That(blocks.GetUsedTilesCount(), Is.Zero);
             }
             finally
             {
                 Object.DestroyImmediate(root);
                 Object.DestroyImmediate(grass);
-                Object.DestroyImmediate(left);
-                Object.DestroyImmediate(right);
-                Object.DestroyImmediate(both);
+                Object.DestroyImmediate(variation);
             }
         }
 

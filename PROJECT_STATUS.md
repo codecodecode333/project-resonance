@@ -2,23 +2,26 @@
 
 - Updated: 2026-09-03
 - Branch: `main`
-- Implementation base: `98b5d5f` (already pushed)
-- Review base: `7e02fcb` (Combat Prototype 007 implementation)
+- Implementation base: `3d2b6d0` (already pushed)
+- Review base: pending local commit of this 007 block presentation refactor
 
 ## Current Milestone
 
-`Combat Prototype 007 — Isometric Grid Presentation` — **Complete**
+`Combat Prototype 007 — Single Block Presentation Refactor` — **Complete, local commit pending**
 
-- 별도 Presentation 어셈블리: Mapper → Tilemap Presenter, 10×8/Height 0·1·2 Demo Bootstrap
-- `BattlePrototype.unity`: Isometric Z as Y Grid, Top/Side/빈 Overlay, Orthographic Camera, URP 개별 타일 정렬
-- 임시 GrassTop 2종 + Cliff 좌/우/양면 PNG·Tile 생성; 128×64/PPU 128/Point/무압축. 원본·프롬프트·Editor one-shot 생성기 포함
-- Unity 실제 URP 캡처에서 단차·절벽·픽셀 정렬 확인 (`Docs/Images/BattlePrototype.png`); Play 버튼을 통한 대화형 검증은 미실시, 수동 절차는 GRID_SYSTEM 문서에 기록
+- 기존 Domain/Mapper/데모 높이 유지. 새 IsometricBlockGridPresenter → TerrainBlockTilemap 하나 + 빈 Overlay
+- 완성형 GrassBlock/Variation PNG·Tile 2종: 윗면 128×64 기준, 캔버스 128×128, PPU 128, Point, 무압축, pivot (0.5,0.75). 새 생성 원본·프롬프트·Editor 준비 도구 포함
+- Height 0/1/2는 동일 블록 1/2/3층(B안); 10×8, 높이별 53/14/13칸, 시각 블록 120장. 아래층은 논리 Surface가 아님. 좌표 mod 5 변형 적용
+- 기존 Top/Side Presenter·Tile·평면 원본 제거. 새 실제 URP 캡처와 동일 맵의 split 비교 캡처를 Docs/Images에 보관
+- 저장 Scene 재오픈·Bootstrap 렌더·층 연결·선명도 확인. 대화형 Play/Console 검증은 미실시; 수동 절차는 GRID_SYSTEM 문서에 기록
 - Unity EditMode Tests: 84/84 passed (Presentation: 2/2); compile errors: 0, test exit code: 0
-- 라이선스 토큰 갱신 오류 로그 1건/실행은 생성·렌더·테스트를 차단하지 않음. Domain 코드와 LegacyReference 미변경
-- Git handoff: `7e02fcb` pushed to `origin/main` on 2026-09-03; this follow-up updates only the handoff record
+- 초기 변형 RGB 알파 오류는 기본형 마스크 공유로 수정; 최종 생성/캡처 exit 0. 기존 라이선스 토큰 갱신 오류 1건/실행은 검증을 차단하지 않음
+- Domain diff 0, LegacyReference 8파일 SHA-256 일치. 새 Unit/Input/Combat 시스템 없음
+- 시각 평가: 단차·측면은 선명하지만 평지 Cell 경계는 split보다 약하고 채도·반복 무늬가 강함. block 방식의 우위는 아직 미확정
+- Git handoff: 검증 완료, 로컬 커밋 예정. 이번 요청은 push를 허용하지 않았으므로 push하지 않음
 
 ## Next Milestone (Proposed)
 
 `Combat Prototype 008 — Unit Presentation`
 
-현재 구현 commit 리뷰·설계 확인 후 UnitState 위치를 정적 UnitView로 표시하는 최소 단계 제안. 이번 작업에는 Unit/Input/Highlight/이동 Animation/Combat이 없으며, 고정 시점의 작은 cliff 세트와 16:10 검증 카메라만 지원한다.
+먼저 이 007 리팩터링 commit과 두 캡처를 ChatGPT에서 리뷰해 표현 방향·Cell 경계/채도를 확정한다. 이후 008에서 UnitState 위치를 정적 UnitView로 표시하는 최소 단계 제안. 96×128 Unit은 참고 기준만 있으며 미구현이다.

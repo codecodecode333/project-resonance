@@ -31,3 +31,5 @@ Unit의 공간 상태 변경은 최초 배치/제거를 담당하는 `UnitPlacem
 `ProjectResonance.Runtime`은 계속 Unity 참조 없이 Domain만 보관한다. 별도 `ProjectResonance.Presentation`은 Domain을 읽어 좌표를 변환하고 Tilemap에 표현하며, Editor 전용 생성기는 저장된 PNG/Tile/Scene을 만드는 저작 도구다. Tilemap은 게임 규칙의 source of truth가 아니다.
 
 실제 구현 클래스 구조는 Combat Prototype을 진행하며 필요한 범위에서 결정한다.
+
+007 표현 리팩터링은 `GridPresentationMapper`와 Domain을 유지하고, `IsometricBlockGridPresenter`로 Top/Side split을 대체했다. 완성형 블록(윗면 128×64 / 캔버스 128×128 / PPU 128)을 하나의 Terrain Tilemap에 Height+1장 쌓는다. 아래층은 표현용이며 논리 Surface를 늘리지 않는다. 이웃 cliff 조합·게임 규칙 변경 없이 블록 단위 가독성과 제작 단순성을 검증한다.

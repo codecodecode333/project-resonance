@@ -6,7 +6,7 @@ namespace ProjectResonance.Presentation
 {
     public sealed class BattlePrototypeBootstrap : MonoBehaviour
     {
-        [SerializeField] private IsometricGridPresenter presenter;
+        [SerializeField] private IsometricBlockGridPresenter presenter;
 
         private void Awake()
         {

@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 137a24f14a5b8414b987bcab45628aa4
+guid: 52ca9ef4becd02b4faf19b683ecb2878
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 3480893449375670547
-    second: CliffLeft_0
+      213: -1623759601925717754
+    second: GrassBlock_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -50,7 +50,7 @@ TextureImporter:
   spriteExtrude: 1
   spriteMeshType: 0
   alignment: 9
-  spritePivot: {x: 0.5, y: 1}
+  spritePivot: {x: 0.5, y: 0.75}
   spritePixelsToUnits: 128
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 0
@@ -100,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: CliffLeft_0
+      name: GrassBlock_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 0
-        width: 65
-        height: 64
+        y: 31
+        width: 128
+        height: 97
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 311650f462e9e4030800000000000000
-      internalID: 3480893449375670547
+      spriteID: 601869ebe3f3779e0800000000000000
+      internalID: -1623759601925717754
       vertices: []
       indices:
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      CliffLeft_0: 3480893449375670547
+      GrassBlock_0: -1623759601925717754
   mipmapLimitGroupName:
   pSDRemoveMatte: 0
   userData:
