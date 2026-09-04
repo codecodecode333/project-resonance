@@ -1,8 +1,8 @@
 using System;
-using ProjectResonance.Core;
-using ProjectResonance.Units;
+using Riftchord.Core;
+using Riftchord.Units;
 
-namespace ProjectResonance.Grid
+namespace Riftchord.Grid
 {
     public sealed class GridTraversal
     {

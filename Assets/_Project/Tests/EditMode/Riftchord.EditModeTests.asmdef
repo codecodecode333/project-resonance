@@ -1,9 +1,9 @@
 {
-  "name": "ProjectResonance.EditModeTests",
-  "rootNamespace": "ProjectResonance.Tests",
+  "name": "Riftchord.EditModeTests",
+  "rootNamespace": "Riftchord.Tests",
   "references": [
-    "ProjectResonance.Runtime",
-    "ProjectResonance.Presentation"
+    "Riftchord.Runtime",
+    "Riftchord.Presentation"
   ],
   "includePlatforms": [
     "Editor"

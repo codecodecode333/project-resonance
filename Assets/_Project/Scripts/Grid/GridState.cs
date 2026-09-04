@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using ProjectResonance.Core;
+using Riftchord.Core;
 
-namespace ProjectResonance.Grid
+namespace Riftchord.Grid
 {
     public sealed class GridState
     {

@@ -1,0 +1,7 @@
+{
+  "name": "Riftchord.Presentation.Editor",
+  "rootNamespace": "Riftchord.Presentation.Editor",
+  "references": ["Riftchord.Runtime", "Riftchord.Presentation", "Unity.RenderPipelines.Universal.Runtime"],
+  "includePlatforms": ["Editor"],
+  "noEngineReferences": false
+}

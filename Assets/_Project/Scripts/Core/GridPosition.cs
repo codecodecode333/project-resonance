@@ -1,6 +1,6 @@
 using System;
 
-namespace ProjectResonance.Core
+namespace Riftchord.Core
 {
     public readonly struct GridPosition : IEquatable<GridPosition>
     {

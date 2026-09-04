@@ -1,7 +1,7 @@
-using ProjectResonance.Core;
+using Riftchord.Core;
 using UnityEngine;
 
-namespace ProjectResonance.Presentation
+namespace Riftchord.Presentation
 {
     public static class GridPresentationMapper
     {

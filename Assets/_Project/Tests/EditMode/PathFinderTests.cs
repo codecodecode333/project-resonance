@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using ProjectResonance.Core;
-using ProjectResonance.Grid;
-using ProjectResonance.Movement;
-using ProjectResonance.Units;
+using Riftchord.Core;
+using Riftchord.Grid;
+using Riftchord.Movement;
+using Riftchord.Units;
 
-namespace ProjectResonance.Tests.EditMode
+namespace Riftchord.Tests.EditMode
 {
     public sealed class PathFinderTests
     {

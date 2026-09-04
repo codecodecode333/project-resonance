@@ -1,7 +1,0 @@
-{
-  "name": "ProjectResonance.Presentation.Editor",
-  "rootNamespace": "ProjectResonance.Presentation.Editor",
-  "references": ["ProjectResonance.Runtime", "ProjectResonance.Presentation", "Unity.RenderPipelines.Universal.Runtime"],
-  "includePlatforms": ["Editor"],
-  "noEngineReferences": false
-}

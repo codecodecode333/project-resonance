@@ -6,7 +6,7 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using Object = UnityEngine.Object;
 
-namespace ProjectResonance.Presentation.Editor
+namespace Riftchord.Presentation.Editor
 {
     public static class BattlePrototypePreview
     {
@@ -16,7 +16,7 @@ namespace ProjectResonance.Presentation.Editor
             Capture();
         }
 
-        [MenuItem("ProjectResonance/Prototype/Capture Grid Preview")]
+        [MenuItem("RIFTCHORD/Prototype/Capture Grid Preview")]
         public static void Capture()
         {
             if (!Application.isBatchMode && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;

@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using ProjectResonance.Core;
-using ProjectResonance.Grid;
-using ProjectResonance.Units;
+using Riftchord.Core;
+using Riftchord.Grid;
+using Riftchord.Units;
 
-namespace ProjectResonance.Movement
+namespace Riftchord.Movement
 {
     public sealed class ReachabilityFinder
     {

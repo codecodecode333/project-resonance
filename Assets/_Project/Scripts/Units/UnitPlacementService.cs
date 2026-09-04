@@ -1,8 +1,8 @@
 using System;
-using ProjectResonance.Core;
-using ProjectResonance.Grid;
+using Riftchord.Core;
+using Riftchord.Grid;
 
-namespace ProjectResonance.Units
+namespace Riftchord.Units
 {
     public sealed class UnitPlacementService
     {

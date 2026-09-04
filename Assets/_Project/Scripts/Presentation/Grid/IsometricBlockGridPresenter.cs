@@ -1,10 +1,10 @@
 using System;
-using ProjectResonance.Core;
-using ProjectResonance.Grid;
+using Riftchord.Core;
+using Riftchord.Grid;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-namespace ProjectResonance.Presentation
+namespace Riftchord.Presentation
 {
     public sealed class IsometricBlockGridPresenter : MonoBehaviour
     {

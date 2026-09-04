@@ -1,10 +1,10 @@
 using System;
 using NUnit.Framework;
-using ProjectResonance.Core;
-using ProjectResonance.Grid;
-using ProjectResonance.Units;
+using Riftchord.Core;
+using Riftchord.Grid;
+using Riftchord.Units;
 
-namespace ProjectResonance.Tests.EditMode
+namespace Riftchord.Tests.EditMode
 {
     public sealed class UnitPlacementTests
     {

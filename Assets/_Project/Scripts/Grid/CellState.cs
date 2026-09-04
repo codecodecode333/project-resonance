@@ -1,7 +1,7 @@
 using System;
-using ProjectResonance.Core;
+using Riftchord.Core;
 
-namespace ProjectResonance.Grid
+namespace Riftchord.Grid
 {
     public sealed class CellState
     {

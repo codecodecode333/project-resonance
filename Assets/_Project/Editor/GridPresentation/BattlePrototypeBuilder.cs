@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using Object = UnityEngine.Object;
 
-namespace ProjectResonance.Presentation.Editor
+namespace Riftchord.Presentation.Editor
 {
     // One-shot authoring only. The scene uses saved PNGs/Tiles, never procedural runtime textures.
     public static class BattlePrototypeBuilder
@@ -15,7 +15,7 @@ namespace ProjectResonance.Presentation.Editor
         private const string SourceRoot = "Assets/_Project/Editor/GridPresentation/ArtSource";
         public const string ScenePath = "Assets/_Project/Scenes/BattlePrototype.unity";
 
-        [MenuItem("ProjectResonance/Prototype/Rebuild Grid Assets and Scene")]
+        [MenuItem("RIFTCHORD/Prototype/Rebuild Grid Assets and Scene")]
         private static void RebuildFromMenu()
         {
             if (!EditorUtility.DisplayDialog("Rebuild prototype",

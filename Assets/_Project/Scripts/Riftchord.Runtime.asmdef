@@ -1,6 +1,6 @@
 {
-  "name": "ProjectResonance.Runtime",
-  "rootNamespace": "ProjectResonance",
+  "name": "Riftchord.Runtime",
+  "rootNamespace": "Riftchord",
   "references": [],
   "includePlatforms": [],
   "excludePlatforms": [],

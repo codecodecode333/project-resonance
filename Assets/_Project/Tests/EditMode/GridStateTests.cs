@@ -1,10 +1,10 @@
 using System;
 using System.Linq;
 using NUnit.Framework;
-using ProjectResonance.Core;
-using ProjectResonance.Grid;
+using Riftchord.Core;
+using Riftchord.Grid;
 
-namespace ProjectResonance.Tests.EditMode
+namespace Riftchord.Tests.EditMode
 {
     public sealed class GridStateTests
     {

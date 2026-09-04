@@ -1,0 +1,6 @@
+{
+  "name": "Riftchord.Presentation",
+  "rootNamespace": "Riftchord.Presentation",
+  "references": ["Riftchord.Runtime"],
+  "noEngineReferences": false
+}

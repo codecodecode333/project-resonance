@@ -1,4 +1,4 @@
-namespace ProjectResonance.Units
+namespace Riftchord.Units
 {
     public enum UnitTeam
     {

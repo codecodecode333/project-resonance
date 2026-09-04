@@ -1664,7 +1664,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f8b8c921f795ead46b8bbb092ff0d9ce, type: 3}
   m_Name:
-  m_EditorClassIdentifier: ProjectResonance.Presentation::ProjectResonance.Presentation.IsometricBlockGridPresenter
+  m_EditorClassIdentifier: Riftchord.Presentation::Riftchord.Presentation.IsometricBlockGridPresenter
   terrainBlocks: {fileID: 1163236331}
   grassBlock: {fileID: 11400000, guid: 69f2fbde8251b034c83624dacd1a636f, type: 2}
   grassBlockVariation: {fileID: 11400000, guid: f7e88debc8ded9f4d9e3743ca7382496, type: 2}
@@ -1740,7 +1740,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 549cc3103bc85c34a84fabde1334d2b9, type: 3}
   m_Name:
-  m_EditorClassIdentifier: ProjectResonance.Presentation::ProjectResonance.Presentation.BattlePrototypeBootstrap
+  m_EditorClassIdentifier: Riftchord.Presentation::Riftchord.Presentation.BattlePrototypeBootstrap
   presenter: {fileID: 1339740581}
 --- !u!1 &1835293926
 GameObject:

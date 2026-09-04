@@ -1,8 +1,8 @@
-using ProjectResonance.Core;
-using ProjectResonance.Grid;
+using Riftchord.Core;
+using Riftchord.Grid;
 using UnityEngine;
 
-namespace ProjectResonance.Presentation
+namespace Riftchord.Presentation
 {
     public sealed class BattlePrototypeBootstrap : MonoBehaviour
     {

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using ProjectResonance.Core;
+using Riftchord.Core;
 
-namespace ProjectResonance.Units
+namespace Riftchord.Units
 {
     public sealed class UnitRegistry
     {

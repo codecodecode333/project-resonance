@@ -1,14 +1,14 @@
 using System;
 using NUnit.Framework;
-using ProjectResonance.Core;
-using ProjectResonance.Grid;
-using ProjectResonance.Presentation;
+using Riftchord.Core;
+using Riftchord.Grid;
+using Riftchord.Presentation;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using Object = UnityEngine.Object;
 
-namespace ProjectResonance.Tests.EditMode
+namespace Riftchord.Tests.EditMode
 {
     public sealed class GridPresentationTests
     {

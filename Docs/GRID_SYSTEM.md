@@ -148,7 +148,7 @@ Grid Cell Size는 `(1, 0.5, 1)`, Tile Anchor는 `(0,0,0)`이며 Height 1은 화�
 
 현재 `Art/Environment/Tiles/Prototype`에는 `GrassBlock`, `GrassBlockVariation`의 실제 PNG와 Tile 에셋이 있다. Sprite Single, PPU 128, Point, 무압축, mipmap 없음, Full Rect mesh다. Pivot `(0.5,0.75)`는 윗면 중심(하단 원점 기준 64,96px)을 Cell 위치에 맞춘다. URP 2D Unlit Material로 조명 없이 읽히는 프로토타입 아트다. 향후 1×1 인간형 Unit의 96×128px 기준은 참고만 하며 캐릭터는 아직 구현하지 않았다.
 
-완성형 아이소메트릭 블록 원본은 built-in imagegen으로 새로 생성했고 `Editor/GridPresentation/ArtSource`에 프롬프트와 함께 보관한다. Editor 메뉴 `ProjectResonance > Prototype > Rebuild Grid Assets and Scene`은 동일 구도의 변형에 기본형 알파를 공유한 뒤 투명 여백 제거·최근접 리사이즈로 PNG/Tile/Scene을 다시 만든다(덮어쓰기 확인 있음). 이전 평면 텍스처 투영·split 면 합성은 제거했다. 런타임 텍스처 생성이나 외부 API 호출은 없다.
+완성형 아이소메트릭 블록 원본은 built-in imagegen으로 새로 생성했고 `Editor/GridPresentation/ArtSource`에 프롬프트와 함께 보관한다. Editor 메뉴 `RIFTCHORD > Prototype > Rebuild Grid Assets and Scene`은 동일 구도의 변형에 기본형 알파를 공유한 뒤 투명 여백 제거·최근접 리사이즈로 PNG/Tile/Scene을 다시 만든다(덮어쓰기 확인 있음). 이전 평면 텍스처 투영·split 면 합성은 제거했다. 런타임 텍스처 생성이나 외부 API 호출은 없다.
 
 ### Prototype visual verification
 
